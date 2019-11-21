@@ -23,6 +23,10 @@ module.exports.cadastrar = function (application, req, res) {
         })
         return;
     }
+    var connection = application.config.dbConnection;
+    const Usuario = new application.app.models.Usuarios(connection);
+
+    Usuario.inserirUsuario(dadosForm);
 
     res.render('cadastro', {
         validacao: [],
