@@ -1,23 +1,26 @@
-function UsuariosDAO(connection){
+var crypto = require('crypto')
+
+function UsuariosDAO(connection) {
 	this._connection = connection();
 }
 
-UsuariosDAO.prototype.inserirUsuario = function(usuario){
-	this._connection.open( function(err, mongoclient){
-		mongoclient.collection("usuarios", function(err, collection){
-			collection.insert(usuario);
-
+UsuariosDAO.prototype.inserirUsuario = function (usuario) {
+	this._connection.open(function (err, mongoclient) {
+		mongoclient.collection("usuarios", function (err, collection) {
+			var hash = crypto.createHash('md5').update(usuario.senha)
+			usuario.senha = hash
+			collection.insert(usuario).digest("hex");
 			mongoclient.close();
 		});
 	});
 }
 
-UsuariosDAO.prototype.autenticar = function(usuario, req, res){
-	this._connection.open( function(err, mongoclient){
-		mongoclient.collection("usuarios", function(err, collection){
-			collection.find(usuario).toArray(function(err, result){
+UsuariosDAO.prototype.autenticar = function (usuario, req, res) {
+	this._connection.open(function (err, mongoclient) {
+		mongoclient.collection("usuarios", function (err, collection) {
+			collection.find(usuario).toArray(function (err, result) {
 
-				if(result[0] != undefined){
+				if (result[0] != undefined) {
 
 					req.session.autorizado = true;
 
@@ -25,10 +28,12 @@ UsuariosDAO.prototype.autenticar = function(usuario, req, res){
 					req.session.casa = result[0].casa;
 				}
 
-				if(req.session.autorizado){
+				if (req.session.autorizado) {
 					res.redirect("jogo");
 				} else {
-					res.render("index", {validacao: {}});
+					res.render("index", {
+						validacao: {}
+					});
 				}
 
 			});
@@ -38,6 +43,6 @@ UsuariosDAO.prototype.autenticar = function(usuario, req, res){
 }
 
 
-module.exports = function(){
+module.exports = function () {
 	return UsuariosDAO;
 }
