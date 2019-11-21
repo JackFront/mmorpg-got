@@ -18,6 +18,10 @@ UsuariosDAO.prototype.inserirUsuario = function (usuario) {
 UsuariosDAO.prototype.autenticar = function (usuario, req, res) {
 	this._connection.open(function (err, mongoclient) {
 		mongoclient.collection("usuarios", function (err, collection) {
+
+			var hash = crypto.createHash('md5').update(usuario.senha)
+			usuario.senha = hash
+
 			collection.find(usuario).toArray(function (err, result) {
 
 				if (result[0] != undefined) {
